@@ -44,5 +44,5 @@ class Node < TkcArc
 
 
 	attr_reader :nodeID, :x, :y
-	attr_accessor :ways
+	attr_accessor :ways, :lbl
 end
