@@ -1,4 +1,43 @@
+################################################################################
+# License: 		MIT
+# Author: 		Eugene Sugatov
+#
+# Copyright (C) 2012, Eugene Sugatov
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal 
+# in the Software without restriction, including without limitation the rights 
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+# copies of the Software, and to permit persons to whom the Software is 
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+# THE SOFTWARE.
+################################################################################
+
+
 class Connector < TkcLine
+
+	attr_reader :weight
+	attr_accessor :source, :dest
+
+	include Comparable
+
+	attr :weight
+
+
+	def <=> c
+		@weight <=> c.weight
+	end
+
+
 	def initialize canvas,x1,y1,x2,y2
 		@x1 = x1
 		@y1 = y1
@@ -33,6 +72,9 @@ class Connector < TkcLine
 		fix2
 	end
 
+
+
+	#вспомогательные:
 
 	def fix2 #устранение наложения бёдер на вершины
 		if not ConnectionBeautify
@@ -157,16 +199,18 @@ class Connector < TkcLine
 	end
 
 
-	attr_reader :weight
-	attr_accessor :source, :dest
+	
 end
 
 
 class Point
+
+	attr_accessor :x, :y
+
+
 	def initialize x,y
 		@x = x
 		@y = y
 	end
 
-	attr_accessor :x, :y
 end
