@@ -1,6 +1,7 @@
 ################################################################################
 # License: 		MIT
 # Author: 		Eugene Sugatov
+# Latest version available at: https://github.com/sugatov/graph/
 #
 # Copyright (C) 2012, Eugene Sugatov
 # Permission is hereby granted, free of charge, to any person obtaining a copy
