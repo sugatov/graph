@@ -27,41 +27,37 @@ $KCODE='UTF-8'
 
 
 #параметры:
-ColorBackground     = '#333333'
-ColorNodeNew        = 'black'
-ColorNodeFix        = '#777777'
-ColorNodeRouted     = '#5B3C91' #'#3C93BD' #B0CC54
-ColorNodeLabel      = 'white'
-ColorConnNew        = 'white'
-ColorConnFix        = '#B0CC54'
-ColorConnRouted     = '#E21D1D' #'orange' #E16C5B #3C93BD
-ColorStatusInactive = '#555555'
 
-ColorScheme = Array(
-	0=>Hash[
-		'Background'     => '#333333',
-		'NodeNew'        =>'black',
-		'NodeFix'        =>'#777777',
-		'NodeRouted'     =>'#5B3C91',
-		'NodeLabel'      =>'white',
-		'ConnNew'        =>'white',
-		'ConnFix'        =>'#B0CC54',
-		'ConnRouted'     =>'#E21D1D',
-		'StatusInactive' =>'#555555'
-	],
-	1=>Hash[
-		'Background'     =>'white',
-		'NodeNew'        =>'black',
-		'NodeFix'        =>'#282828',
-		'NodeRouted'     =>'#C40000',
-		'NodeLabel'      =>'white',
-		'ConnNew'        =>'#0000FF',
-		'ConnFix'        =>'C40000',
-		'ConnRouted'     =>'#0000FF',
-		'StatusInactive' =>'#000080'
-	]
-)
-
+ColorScheme1 = Hash[
+	'Background'		=>'#333333',
+	'NodeNew'			=>'#000000',
+	'NodeFix'			=>'#777777',
+	'NodeRouted'		=>'#5B3C91',
+	'NodeLabel'			=>'#FFFFFF',
+	'NodeLabel2'		=>'#000000',
+	'ConnNew'			=>'#FFFFFF',
+	'ConnFix'			=>'#B0CC54',
+	'ConnRouted'		=>'#E21D1D',
+	'Status'			=>'#FFFFFF',
+	'StatusInactive'	=>'#555555',
+	'StatusErr'			=>'#D85F05',
+	'Grid'				=>'#555555'
+]
+ColorScheme2 = Hash[
+	'Background'		=>'#FFFFFF',
+	'NodeNew'			=>'#000000',
+	'NodeFix'			=>'#282828',
+	'NodeRouted'		=>'#C0C0C0',
+	'NodeLabel'			=>'#FFFFFF',
+	'NodeLabel2'		=>'#969696',
+	'ConnNew'			=>'#000000',
+	'ConnFix'			=>'#000080',
+	'ConnRouted'		=>'#0066FF',
+	'Status'			=>'#000000',
+	'StatusInactive'	=>'#808080',
+	'StatusErr'			=>'#FF0000',
+	'Grid'				=>'#7D7DAA'
+]
 
 
 NRAD = 12 #радиус вершин
@@ -72,7 +68,7 @@ ConnectionBeautify = true #влияет на производительност�
 
 
 
-HelpString = 'M1 - доб./перем. вершину, DBL M1 - удалить. M2 - соединение, Control-M2 - двустороннее. M3 - функц.кнопки. I - список вершин и рёбер. N - восстановить.'
+HelpString = 'M1 - доб./перем. вершину, DBL M1 - удалить. M2 - соединение, Control-M2 - двустороннее. M3 - функц.кнопки.'
 
 
 
@@ -84,8 +80,14 @@ require 'graph.model.rb'
 
 
 class GraphEditor < TkCanvas
+
+	attr_reader		:cs
+
 	def initialize parent, dataModel, width=900, height=540
-		#parent.background = ColorBackground
+		@cs = ColorScheme1
+		@locked = false
+
+		parent.background = @cs['Background']
 		@dm = dataModel
 		@nodes = @dm.nodes
 		@connections = @dm.connections
@@ -94,12 +96,12 @@ class GraphEditor < TkCanvas
 		@hintPos = (@width/2).round
 
 		@btnPos = Point.new 8+12,24+12
+		
 
-		@locked = false
-
-		super parent,'width'=>width,'height'=>height,'background'=>ColorBackground
+		super parent,'width'=>width,'height'=>height,'background'=>@cs['Background']
 		pack
-		TkcText.new self,@hintPos,8,'text'=>HelpString,'fill'=>ColorNodeLabel
+		@hint1 = TkcText.new self,@hintPos,8,'text'=>HelpString,'fill'=>@cs['Status']
+		toggleGrid
 
 		@x1 = @y1 = 0
 
@@ -117,18 +119,17 @@ class GraphEditor < TkCanvas
 
 		bind 'n', proc{normalize}
 		bind 'q', proc{reset}
-		bind 'i', proc{puts "~~~~ Nodes & Ribs:\r\n#{@dm}--------"}
+		#bind 'i', proc{puts "~~~~ Nodes & Ribs:\r\n#{@dm}--------"}
 		bind 'm', proc{loadImage}
 		bind 'g', proc{toggleGrid}
 
 
 		b1 = imgButton 'btn.new.gif', 'Сброс (Q)'
 		b1.bind '2', proc{reset}
-		b2 = imgButton 'btn.grid.gif', 'Показать сетку (G)'
+		b2 = imgButton 'btn.grid.gif', 'Сетка (G)'
 		b2.bind '2', proc{toggleGrid}
 		b3 = imgButton 'btn.img.gif', 'Загрузить фоновое изображение (M)'
 		b3.bind '2', proc{loadImage}
-
 
 	end
 
@@ -142,10 +143,10 @@ class GraphEditor < TkCanvas
 	end
 
 	def hint str
-		TkcText.new self, @hintPos,24, 'text'=>str,'fill'=>ColorNodeLabel
+		@hint2 = TkcText.new self, @hintPos,24, 'text'=>str,'fill'=>@cs['Status']
 	end
 
-	def status str, color=ColorNodeLabel
+	def status str, color=@cs['Status']
 		if @statusThr and @statusThr.alive?
 			@statusThr.kill
 		end
@@ -154,15 +155,15 @@ class GraphEditor < TkCanvas
 				@statusbar.text = str
 				@statusbar.fill = color
 			else
-				t = @height - 10
-				@statusbar = TkcText.new self, @hintPos,t, 'text'=>str,'fill'=>color
+				t = @height - 16
+				@statusbar = TkcText.new self, @hintPos,t, 'text'=>str,'fill'=>color, 'font'=>TkFont.new('Verdana 10 bold')
 			end
 			sleep 2
 			@statusbar.text = ''
 		}
 	end
 
-	def drawGrid h, v, color
+	def drawGrid h, v, color=@cs['Grid']
 		@grid = Array.new
 		ih = (self.height / (h)).round
 		iv = (self.width / (v)).round
@@ -192,7 +193,7 @@ class GraphEditor < TkCanvas
 			@grid.clear
 		end
 	end
-	def toggleGrid h=12,v=20, color='#555555'
+	def toggleGrid h=12,v=20, color=@cs['Grid']
 		if @grid and @grid.count>0
 			remGrid
 		else
@@ -200,18 +201,13 @@ class GraphEditor < TkCanvas
 		end
 	end
 
-	def switchColorScheme id
-		#cs = ColorSchemes[id]
-		#ColorBackground     = cs['ColorBackground']
-		#ColorNodeNew        = cs['ColorNodeNew']
-		#ColorNodeFix        = cs['ColorNodeFix']
-		#ColorNodeRouted     = cs['ColorNodeRouted']
-		#ColorNodeLabel      = cs['ColorNodeLabel']
-		#ColorConnNew        = cs['ColorConnNew']
-		#ColorConnFix        = cs['ColorConnFix']
-		#ColorConnRouted     = cs['ColorConnRouted']
-		#ColorStatusInactive = cs['ColorStatusInactive']
-		#normalize
+	def switchColorScheme forceMain=false
+		if forceMain
+			@cs = ColorScheme1
+		else
+			@cs = @cs==ColorScheme1 ? ColorScheme2 : ColorScheme1
+		end
+		normalize true,true,true,true
 	end
 	
 
@@ -228,30 +224,37 @@ class GraphEditor < TkCanvas
 	def loadImage
 		if @displayImg
 			@displayImg.delete
-			#switchColorScheme 0
+			switchColorScheme true
 		end
 		filename = Tk::getOpenFile
-		if filename
+		if File.exists? filename
 			#require 'tkextlib/tkimg'
 			x = (self.width/2).round
 			y = (self.height/2).round
 			img = TkPhotoImage.new 'file'=>filename
 			@displayImg = TkcImage.new self, x,y, 'image'=>img
 			@displayImg.lower
-			#switchColorScheme 1
+			switchColorScheme
 		end
 	end
 
-	def normalize text = true, nbg = true, cbg = true
+	def normalize text = true, nbg = true, cbg = true, grid = false
 		@nodes.each do |k,n|
-			if text then n.text n.nodeID,ColorNodeLabel end
-			if nbg then n.fill ColorNodeFix end
+			if text then n.text n.nodeID,@cs['NodeLabel'] end
+			if nbg then n.fill @cs['NodeFix'] end
 		end
 		if cbg
 			@connections.each do |k,c|
-				c.fill ColorConnFix
+				c.fill @cs['ConnFix']
 			end
 		end
+		if grid and @grid and @grid.count>0
+			@grid.each do |g|
+				g.fill @cs['Grid']
+			end
+		end
+		if @hint1 then @hint1.fill @cs['Status'] end
+		if @hint2 then @hint2.fill @cs['Status'] end
 	end
 
 	def lock

@@ -35,31 +35,32 @@ class Node < TkcArc
 	def text=val
 		@lbl.text = val
 	end
-	def text val,color=ColorNodeLabel
+	def text val,color=@canvas.cs['NodeLabel']
 		@lbl.text = val
 		@lbl.fill color
 	end
 
 
 	def initialize canvas,id,x,y
+		@canvas = canvas
 		@nodeID = id
 		@x = x
 		@y = y
 		@ways = Hash.new
-		super canvas, x-NRAD,y-NRAD, x+NRAD,y+NRAD, 'extent'=>359, 'style'=>'chord', 'width'=>1, 'fill'=>ColorNodeNew,'outline'=>'white'
-		@lbl = TkcText.new(canvas,x,y,'text'=>id.to_s,'fill'=>ColorNodeLabel)
+		super canvas, x-NRAD,y-NRAD, x+NRAD,y+NRAD, 'extent'=>359, 'style'=>'chord', 'width'=>1, 'fill'=>@canvas.cs['NodeNew'],'outline'=>'white'
+		@lbl = TkcText.new(canvas,x,y,'text'=>id.to_s,'fill'=>@canvas.cs['NodeLabel'])
 	end
 
 	def move(x,y)
 		@x = x
 		@y = y
-		fill ColorNodeNew
+		fill @canvas.cs['NodeNew']
 		coords x-NRAD,y-NRAD, x+NRAD,y+NRAD
 		@lbl.coords x,y
 	end
 
 	def fix
-		fill ColorNodeFix
+		fill @canvas.cs['NodeFix']
 	end
 
 	def hit?(x,y,precision)

@@ -39,13 +39,14 @@ class Connector < TkcLine
 
 
 	def initialize canvas,x1,y1,x2,y2
+		@canvas = canvas
 		@x1 = x1
 		@y1 = y1
 		@x2 = x2
 		@y2 = y2
 		@source = nil
 		@dest = nil
-		super canvas, x1,y1, x2,y2, 'arrow'=>'last','width'=>1,'fill'=>ColorConnNew
+		super canvas, x1,y1, x2,y2, 'arrow'=>'last','width'=>2,'fill'=>@canvas.cs['ConnNew']
 	end
 
 	def move x1,y1, x2,y2
@@ -67,7 +68,7 @@ class Connector < TkcLine
 		b = (y1-y2)**2.abs
 		c = Math.sqrt(a+b)
 		@weight = c
-		fill ColorConnFix
+		fill @canvas.cs['ConnFix']
 
 		fix2
 	end

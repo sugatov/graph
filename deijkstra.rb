@@ -65,7 +65,7 @@ class Dijkstra < GraphEditor
 		end
 		
 		if @nodes.count < 2
-			status 'недостаточно вершин!', '#D85F05'
+			status 'недостаточно вершин!', @cs['StatusErr']
 			return
 		end
 
@@ -91,7 +91,7 @@ class Dijkstra < GraphEditor
 						@vs = @ws.sort_by{|k,v| v} 		# Hash преобразуется в Array и сортируется по значению
 						@vs.each do |k|
 							if k[1]==Infinity
-								status 'найдены недосягаемые вершины!', '#D85F05'
+								status 'найдены недосягаемые вершины!', @cs['StatusErr']
 								throw :infinity
 							end
 							if not checklist[k[0]]
@@ -116,7 +116,7 @@ class Dijkstra < GraphEditor
 	def check node
 		status "вершина: #{node.nodeID}"
 		if @visualizer
-			node.fill ColorNodeRouted
+			node.fill @cs['NodeRouted']
 			sleep 1
 		end
 		nw = @ws[node.nodeID]
@@ -130,14 +130,14 @@ class Dijkstra < GraphEditor
 			status "вершина: #{node.nodeID}, ребро -> #{w.dest.nodeID}"
 			if @visualizer
 				w.raise
-				w.fill ColorConnRouted
+				w.fill @cs['ConnRouted']
 				sleep 0.5
 			end
 			id = w.dest.nodeID
 			if nw + w.weight < @ws[id]
 				@ws[id] = nw + w.weight
 				@parents[id] = node.nodeID
-				w.dest.text((nw + w.weight).round, '#000000')
+				w.dest.text((nw + w.weight).round, @cs['NodeLabel2'])
 			end
 		end
 		norm
@@ -146,7 +146,7 @@ class Dijkstra < GraphEditor
 	def showRoute x,y
 		fn = findNode x,y
 		if not fn
-			status 'вершина не указана!','#D85F05'
+			status 'вершина не указана!',@cs['StatusErr']
 		else
 			if @ws and @ws[fn.nodeID] and @ws[fn.nodeID] < Infinity
 				n = fn.nodeID
@@ -158,7 +158,7 @@ class Dijkstra < GraphEditor
 					norm
 				}
 			else
-				status 'путь не найден!','#D85F05'
+				status 'путь не найден!',@cs['StatusErr']
 			end
 		end
 	end
@@ -167,7 +167,7 @@ class Dijkstra < GraphEditor
 		if p
 			c = @connections[@dm.connectionID @nodes[p], @nodes[n]]
 			c.raise
-			c.fill ColorConnRouted
+			c.fill @cs['ConnRouted']
 			return p
 		else
 			return false
