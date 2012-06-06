@@ -27,15 +27,42 @@ $KCODE='UTF-8'
 
 
 #параметры:
-ColorBackground = '#333333'
-ColorNodeNew = 'black'
-ColorNodeFix = '#777777'
-ColorNodeRouted = '#5B3C91' #'#3C93BD' #B0CC54
-ColorNodeLabel = 'white'
-ColorConnNew = 'white'
-ColorConnFix = '#B0CC54'
-ColorConnRouted = '#E21D1D' #'orange' #E16C5B #3C93BD
+ColorBackground     = '#333333'
+ColorNodeNew        = 'black'
+ColorNodeFix        = '#777777'
+ColorNodeRouted     = '#5B3C91' #'#3C93BD' #B0CC54
+ColorNodeLabel      = 'white'
+ColorConnNew        = 'white'
+ColorConnFix        = '#B0CC54'
+ColorConnRouted     = '#E21D1D' #'orange' #E16C5B #3C93BD
 ColorStatusInactive = '#555555'
+
+ColorSchemes = Array(
+	0=>Hash[
+		'ColorBackground'     => '#333333',
+		'ColorNodeNew'        =>'black',
+		'ColorNodeFix'        =>'#777777',
+		'ColorNodeRouted'     =>'#5B3C91',
+		'ColorNodeLabel'      =>'white',
+		'ColorConnNew'        =>'white',
+		'ColorConnFix'        =>'#B0CC54',
+		'ColorConnRouted'     =>'#E21D1D',
+		'ColorStatusInactive' =>'#555555'
+	],
+	1=>Hash[
+		'ColorBackground'     =>'white',
+		'ColorNodeNew'        =>'black',
+		'ColorNodeFix'        =>'#282828',
+		'ColorNodeRouted'     =>'#C40000',
+		'ColorNodeLabel'      =>'white',
+		'ColorConnNew'        =>'#0000FF',
+		'ColorConnFix'        =>'C40000',
+		'ColorConnRouted'     =>'#0000FF',
+		'ColorStatusInactive' =>'#000080'
+	]
+)
+
+
 
 NRAD = 12 #радиус вершин
 
@@ -45,7 +72,7 @@ ConnectionBeautify = true #влияет на производительност�
 
 
 
-HelpString = 'ЛКМ - добавить/переместить вершину, ДВАЖДЫ - удалить. ПКМ - соединение, Control-ПКМ - двустороннее. I - список вершин/рёбер. N - восст. Q - сброс.'
+HelpString = 'M1 - доб./перем. вершину, DBL M1 - удалить. M2 - соединение, Control-M2 - двустороннее. I - список вершин/рёбер. N - восст. Q - сброс. G - сетка. M - ф/изобр.'
 
 
 
@@ -58,13 +85,15 @@ require 'graph.model.rb'
 
 class GraphEditor < TkCanvas
 	def initialize parent, dataModel, width=900, height=540
-		parent.background = ColorBackground
+		#parent.background = ColorBackground
 		@dm = dataModel
 		@nodes = @dm.nodes
 		@connections = @dm.connections
 		@width = width
 		@height = height
 		@hintPos = (@width/2).round
+
+		@btnPos = Point.new 8+12,24+12
 
 		@locked = false
 
@@ -89,6 +118,23 @@ class GraphEditor < TkCanvas
 		bind 'n', proc{normalize}
 		bind 'q', proc{reset}
 		bind 'i', proc{puts "~~~~ Nodes & Ribs:\r\n#{@dm}--------"}
+		bind 'm', proc{loadImage}
+		bind 'g', proc{toggleGrid}
+
+
+		#imggg = TkPhotoImage.new 'file'=>'b.grid.gif'
+		#btn = TkcImage.new self, 50,50, 'image'=>imggg
+		#btn.bind '3', proc{toggleGrid}
+		#btnGrid = TkcRectangle.new self, 4,32, 4+24,32+24, 'width'=>1, 'fill'=>'#939393'
+		#btnGrid.bind '3', proc{toggleGrid}
+		#btnImage = TkcRectangle.new self, 4,64, 4+24,64+24, 'width'=>1, 'fill'=>'#A2A2A2'
+		#btnImage.bind '3', proc{loadImage}
+
+		b1 = imgButton 'btn.new.gif', '3', proc{reset}
+		b2 = imgButton 'btn.grid.gif', '3', proc{toggleGrid}
+		b3 = imgButton 'btn.img.gif', '3', proc{loadImage}
+
+
 	end
 
 	def reset
@@ -96,6 +142,7 @@ class GraphEditor < TkCanvas
 		@connections.each {|k,c| c.delete}
 		@nodes.each {|k,n| n.delete}
 		@dm.reset
+		if @displayImg then @displayImg.delete end
 		unlock
 	end
 
@@ -120,9 +167,90 @@ class GraphEditor < TkCanvas
 		}
 	end
 
+	def drawGrid h, v, color
+		@grid = Array.new
+		ih = (self.height / (h)).round
+		iv = (self.width / (v)).round
+		pos = 0
+		h -= 1
+		h.times do
+			pos += ih
+			l = TkcLine.new self, 0,pos, self.width,pos, 'width'=>1, 'fill'=>color
+			l.lower
+			@grid.push l
+		end
+		pos = 0
+		v -= 1
+		v.times do
+			pos += iv
+			l = TkcLine.new self, pos,0, pos,self.height, 'width'=>1, 'fill'=>color
+			l.lower
+			@grid.push l
+		end
+		if @displayImg then @displayImg.lower end
+	end
+	def remGrid
+		if @grid
+			@grid.each do |g|
+				g.delete
+			end
+			@grid.clear
+		end
+	end
+	def toggleGrid h=12,v=20, color='#555555'
+		if @grid and @grid.count>0
+			remGrid
+		else
+			drawGrid h,v, color
+		end
+	end
+
+	def switchColorScheme id
+		#cs = ColorSchemes[id]
+		#ColorBackground     = cs['ColorBackground']
+		#ColorNodeNew        = cs['ColorNodeNew']
+		#ColorNodeFix        = cs['ColorNodeFix']
+		#ColorNodeRouted     = cs['ColorNodeRouted']
+		#ColorNodeLabel      = cs['ColorNodeLabel']
+		#ColorConnNew        = cs['ColorConnNew']
+		#ColorConnFix        = cs['ColorConnFix']
+		#ColorConnRouted     = cs['ColorConnRouted']
+		#ColorStatusInactive = cs['ColorStatusInactive']
+		#normalize
+	end
+	
+
+	def imgButton file, key, proc
+		x = @btnPos.x
+		y = @btnPos.y
+		img = TkPhotoImage.new 'file'=>file
+		b = TkcImage.new self, x,y, 'image'=>img
+		b.bind key, proc
+		@btnPos.y += 32
+		return b
+	end
+
+
+	def loadImage
+		if @displayImg
+			@displayImg.delete
+			#switchColorScheme 0
+		end
+		filename = Tk::getOpenFile
+		if filename
+			#require 'tkextlib/tkimg'
+			x = (self.width/2).round
+			y = (self.height/2).round
+			img = TkPhotoImage.new 'file'=>filename
+			@displayImg = TkcImage.new self, x,y, 'image'=>img
+			@displayImg.lower
+			#switchColorScheme 1
+		end
+	end
+
 	def normalize text = true, nbg = true, cbg = true
 		@nodes.each do |k,n|
-			if text then n.text = n.nodeID end
+			if text then n.text n.nodeID,ColorNodeLabel end
 			if nbg then n.fill ColorNodeFix end
 		end
 		if cbg

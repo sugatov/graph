@@ -35,6 +35,10 @@ class Node < TkcArc
 	def text=val
 		@lbl.text = val
 	end
+	def text val,color=ColorNodeLabel
+		@lbl.text = val
+		@lbl.fill color
+	end
 
 
 	def initialize canvas,id,x,y

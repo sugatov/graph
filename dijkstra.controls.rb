@@ -23,21 +23,42 @@
 ################################################################################
 
 
-class DebugView
-	def initialize parent
-		@text = TkText.new(parent) do
-			width 80
-			height 20
-			#borderwidth 1
-			#font TkFont.new('times 12 bold')
-			#pack("side" => "right",  "padx"=> "5", "pady"=> "5")
+class DijkstraControls
+	def initialize parent, object
+		TkButton.new parent do
+			text 'Сброс'
+			command proc{
+				object.reset
+			}
+			pack
+		end
+		TkButton.new parent do
+			text 'Сетка'
+			command proc{
+				object.toggleGrid
+			}
+			pack
+		end
+		TkButton.new parent do
+			text 'Загрузить фоновое изображение'
+			command proc{
+				object.loadImage
+			}
+			pack
+		end
+		TkButton.new parent do
+			text 'Вкл/выкл визуализацию'
+			command proc{
+				object.toggleVis
+			}
+			pack
+		end
+		TkButton.new parent do
+			text 'Поиск путей'
+			command proc{
+				object.route
+			}
 			pack
 		end
 	end
-
-	def message str
-		@text.clear
-		@text.insert 'end', str
-	end
-
 end

@@ -46,7 +46,10 @@ class Dijkstra < GraphEditor
 		bind 'Control-2', proc{|e| showRoute e.x,e.y}
 		bind 'v', proc{toggleVis}
 		
-		hint 'СКМ/R - поиск решения. Control-СКМ - показать путь до вершины. V - вкл/выкл визуализацию.'
+		hint 'M3/R - поиск решения. Control-M3 - показать путь до вершины. V - вкл/выкл визуализацию.'
+
+		bv = imgButton 'btn.vis.gif', '3', proc{toggleVis}
+		br = imgButton 'btn.route.gif', '3', proc{route}		
 	end
 
 	
@@ -132,7 +135,7 @@ class Dijkstra < GraphEditor
 			if nw + w.weight < @ws[id]
 				@ws[id] = nw + w.weight
 				@parents[id] = node.nodeID
-				w.dest.text = (nw + w.weight).round
+				w.dest.text((nw + w.weight).round, '#000000')
 			end
 		end
 		norm
@@ -187,8 +190,21 @@ end
 
 
 
-
 model = GraphModel.new
 root = TkRoot.new {title 'Поиск кратчайших путей по алгоритму Dijkstra'}
-Dijkstra.new root, model
+dijkstra = Dijkstra.new root, model
+
+require 'dijkstra.controls.rb'
+controlstop = TkToplevel.new{title 'Функции'}
+controls = DijkstraControls.new controlstop, dijkstra
+
+
+require 'debugview.rb'
+dbgtop = TkToplevel.new {title 'Debug'}
+dbg = DebugView.new dbgtop
+
+dijkstra.focus
+dijkstra.bind 'z', proc{dbg.message ColorSchemes.inspect}
+
+
 Tk.mainloop
