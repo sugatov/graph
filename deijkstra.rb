@@ -41,15 +41,17 @@ class Dijkstra < GraphEditor
 		@visualizer = true
 
 		focus
-		bind '2', proc{route}
+		#bind '2', proc{route}
 		bind 'r', proc{route}
 		bind 'Control-2', proc{|e| showRoute e.x,e.y}
 		bind 'v', proc{toggleVis}
 		
-		hint 'M3/R - поиск решения. Control-M3 - показать путь до вершины. V - вкл/выкл визуализацию.'
+		hint 'Control-M3 - показать путь до вершины.'
 
-		bv = imgButton 'btn.vis.gif', '3', proc{toggleVis}
-		br = imgButton 'btn.route.gif', '3', proc{route}		
+		bv = imgButton 'btn.vis.gif', 'ВКЛ/ВЫКЛ визуализацию (V)'
+		bv.bind '2', proc{toggleVis}
+		br = imgButton 'btn.route.gif', 'Поиск путей (R)'
+		br.bind '2', proc{route}
 	end
 
 	
@@ -194,17 +196,15 @@ model = GraphModel.new
 root = TkRoot.new {title 'Поиск кратчайших путей по алгоритму Dijkstra'}
 dijkstra = Dijkstra.new root, model
 
-require 'dijkstra.controls.rb'
-controlstop = TkToplevel.new{title 'Функции'}
-controls = DijkstraControls.new controlstop, dijkstra
 
+#require 'dijkstra.controls.rb'
+#controlstop = TkToplevel.new{title 'Функции'}
+#controls = DijkstraControls.new controlstop, dijkstra
 
-require 'debugview.rb'
-dbgtop = TkToplevel.new {title 'Debug'}
-dbg = DebugView.new dbgtop
+#require 'debugview.rb'
+#dbgtop = TkToplevel.new {title 'Debug'}
+#dbg = DebugView.new dbgtop
 
-dijkstra.focus
-dijkstra.bind 'z', proc{dbg.message ColorSchemes.inspect}
 
 
 Tk.mainloop

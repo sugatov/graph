@@ -37,28 +37,28 @@ ColorConnFix        = '#B0CC54'
 ColorConnRouted     = '#E21D1D' #'orange' #E16C5B #3C93BD
 ColorStatusInactive = '#555555'
 
-ColorSchemes = Array(
+ColorScheme = Array(
 	0=>Hash[
-		'ColorBackground'     => '#333333',
-		'ColorNodeNew'        =>'black',
-		'ColorNodeFix'        =>'#777777',
-		'ColorNodeRouted'     =>'#5B3C91',
-		'ColorNodeLabel'      =>'white',
-		'ColorConnNew'        =>'white',
-		'ColorConnFix'        =>'#B0CC54',
-		'ColorConnRouted'     =>'#E21D1D',
-		'ColorStatusInactive' =>'#555555'
+		'Background'     => '#333333',
+		'NodeNew'        =>'black',
+		'NodeFix'        =>'#777777',
+		'NodeRouted'     =>'#5B3C91',
+		'NodeLabel'      =>'white',
+		'ConnNew'        =>'white',
+		'ConnFix'        =>'#B0CC54',
+		'ConnRouted'     =>'#E21D1D',
+		'StatusInactive' =>'#555555'
 	],
 	1=>Hash[
-		'ColorBackground'     =>'white',
-		'ColorNodeNew'        =>'black',
-		'ColorNodeFix'        =>'#282828',
-		'ColorNodeRouted'     =>'#C40000',
-		'ColorNodeLabel'      =>'white',
-		'ColorConnNew'        =>'#0000FF',
-		'ColorConnFix'        =>'C40000',
-		'ColorConnRouted'     =>'#0000FF',
-		'ColorStatusInactive' =>'#000080'
+		'Background'     =>'white',
+		'NodeNew'        =>'black',
+		'NodeFix'        =>'#282828',
+		'NodeRouted'     =>'#C40000',
+		'NodeLabel'      =>'white',
+		'ConnNew'        =>'#0000FF',
+		'ConnFix'        =>'C40000',
+		'ConnRouted'     =>'#0000FF',
+		'StatusInactive' =>'#000080'
 	]
 )
 
@@ -72,7 +72,7 @@ ConnectionBeautify = true #влияет на производительност�
 
 
 
-HelpString = 'M1 - доб./перем. вершину, DBL M1 - удалить. M2 - соединение, Control-M2 - двустороннее. I - список вершин/рёбер. N - восст. Q - сброс. G - сетка. M - ф/изобр.'
+HelpString = 'M1 - доб./перем. вершину, DBL M1 - удалить. M2 - соединение, Control-M2 - двустороннее. M3 - функц.кнопки. I - список вершин и рёбер. N - восстановить.'
 
 
 
@@ -122,17 +122,12 @@ class GraphEditor < TkCanvas
 		bind 'g', proc{toggleGrid}
 
 
-		#imggg = TkPhotoImage.new 'file'=>'b.grid.gif'
-		#btn = TkcImage.new self, 50,50, 'image'=>imggg
-		#btn.bind '3', proc{toggleGrid}
-		#btnGrid = TkcRectangle.new self, 4,32, 4+24,32+24, 'width'=>1, 'fill'=>'#939393'
-		#btnGrid.bind '3', proc{toggleGrid}
-		#btnImage = TkcRectangle.new self, 4,64, 4+24,64+24, 'width'=>1, 'fill'=>'#A2A2A2'
-		#btnImage.bind '3', proc{loadImage}
-
-		b1 = imgButton 'btn.new.gif', '3', proc{reset}
-		b2 = imgButton 'btn.grid.gif', '3', proc{toggleGrid}
-		b3 = imgButton 'btn.img.gif', '3', proc{loadImage}
+		b1 = imgButton 'btn.new.gif', 'Сброс (Q)'
+		b1.bind '2', proc{reset}
+		b2 = imgButton 'btn.grid.gif', 'Показать сетку (G)'
+		b2.bind '2', proc{toggleGrid}
+		b3 = imgButton 'btn.img.gif', 'Загрузить фоновое изображение (M)'
+		b3.bind '2', proc{loadImage}
 
 
 	end
@@ -220,12 +215,11 @@ class GraphEditor < TkCanvas
 	end
 	
 
-	def imgButton file, key, proc
+	def imgButton file, hint=''
 		x = @btnPos.x
 		y = @btnPos.y
-		img = TkPhotoImage.new 'file'=>file
-		b = TkcImage.new self, x,y, 'image'=>img
-		b.bind key, proc
+		b = ImgButton.new self, x,y, file
+		b.bind 'Motion', proc{status hint}
 		@btnPos.y += 32
 		return b
 	end
@@ -471,4 +465,14 @@ class GraphEditor < TkCanvas
 
 
 
+end
+
+
+
+
+class ImgButton < TkcImage
+	def initialize parent, x,y, filename
+		@img = TkPhotoImage.new 'file'=>filename
+		super parent, x,y, 'image'=>@img
+	end
 end
